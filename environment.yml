@@ -1,0 +1,5 @@
+name: beta01
+summary: beta01
+description: beta01 description
+runner: ARM
+templatePath: azuredeploy.json
