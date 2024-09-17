@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "accounts_devenvtest_azureopenai_01_name": {
-            "defaultValue": "devenvtest-azureopenai-01",
+            "defaultValue": "devenvtest-azureopenai-01-01",
             "type": "String"
         }
     },
