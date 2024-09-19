@@ -1,0 +1,5 @@
+name: CLOUD-4007
+summary: Open AI enviornoment
+description:  Environment includes Azure Open AI, Azure AI Hub, Storage account, Cosmos DB, Azure AI search, Azure AI studio
+runner: ARM
+templatePath: azuredeploy.json

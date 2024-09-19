@@ -1,0 +1,96 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+  },
+  "variables":{
+    "aiName": "[concat('ai-', uniqueString(resourceGroup().id))]", 
+    "aiSearchName": "[concat('aisearch-', uniqueString(resourceGroup().id))]" 
+},
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "name": "deployVnet",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2020-04-01",
+              "name": "vnet01",
+              "location": "[resourceGroup().location]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "172.16.0.0/26"
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "subnet-1",
+                    "properties": {
+                      "serviceEndpoints": [
+                        {
+                          "service": "Microsoft.CognitiveServices",
+                          "locations": [
+                            "[resourceGroup().location]"
+                          ]
+                        }
+                      ],
+                      "addressPrefix": "172.16.0.0/26"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "parameters": {}
+      }
+    },
+    {
+      "apiVersion": "2022-03-01",
+      "name": "[variables('aiName')]",
+      "location": "[resourceGroup().location]",
+      "type": "Microsoft.CognitiveServices/accounts",
+      "kind": "OpenAI",
+      "sku": {
+        "name": "S0"
+      },
+      "properties": {
+        "customSubDomainName": "[toLower(variables('aiName'))]",
+        "publicNetworkAccess": "Enabled",
+        "networkAcls": {
+          "defaultAction": "Deny",
+          "virtualNetworkRules": "[json(concat('[{\"id\": \"', concat(subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/virtualNetworks/vnet01/subnets/subnet-1'), '\"}]'))]",
+          "ipRules": "[json('[]')]"
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Resources/deployments/', 'deployVnet')]"
+      ]
+    },
+    {
+      "apiVersion": "2024-03-01-preview",
+      "name": "[variables('aiSearchName')]",
+      "location": "[resourceGroup().location]",
+      "type": "Microsoft.Search/searchServices",
+      "sku": {
+        "name": "standard"
+      },
+      "properties": {
+        "replicaCount": 1,
+        "partitionCount": 1,
+        "hostingMode": "Default"
+      },
+      "tags": {},
+      "dependsOn": []
+    }
+  ]
+}
